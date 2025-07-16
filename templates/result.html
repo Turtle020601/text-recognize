@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="main-container p-5">
+            <!-- Rikkei Logo in container corner -->
+            <div class="rikkei-logo">
+                <a href="https://rikkeisoft.com" target="_blank" title="Rikkei Software">
+                    <img src="{{ url_for('static', filename='Logo-Rikkei.png') }}" alt="Rikkei Software">
+                </a>
+            </div>
+            
+            <div class="text-center mb-4">
+                <h1><i class="fas fa-check-circle text-success me-3"></i>Text Extraction Complete</h1>
+                <p class="text-muted">
+                    Processed using {{ method }} method
+                    {% if language %} | Language: {{ language }}{% endif %}
+                </p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-image me-2"></i>Uploaded Image
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ image_data }}" alt="{{ filename }}" class="img-fluid rounded shadow" style="height: 200px; max-width: 100%;">
+                            <p class="text-muted mt-2 mb-0">
+                                <small><i class="fas fa-file me-1"></i>{{ filename }}</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="result-card p-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-text-width me-2"></i>Extracted Text:
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="copyToClipboard('extractedText')">
+                                <i class="fas fa-copy me-1"></i>Copy
+                            </button>
+                        </h5>
+                        <div class="border rounded p-3" style="background-color: #f8f9fa; min-height: 400px; max-height: 500px; overflow-y: auto;">
+                            <pre id="extractedText" style="white-space: pre-wrap; font-family: 'Arial', sans-serif; margin: 0; line-height: 1.5; font-size: 13px;">{{ raw_text if raw_text else 'No text found in the image.' }}</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="result-card p-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Identifiable Information:
+                        </h5>
+                        <div class="border rounded p-3" style="background-color: #f0f8ff; min-height: 400px; max-height: 500px; overflow-y: auto;">
+                            <pre id="formattedInfo" style="white-space: pre-wrap; font-family: 'Arial', sans-serif; margin: 0; line-height: 1.6; font-size: 14px;">{{ formatted_info if formatted_info else 'No identifiable information found.' }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle text-info me-2"></i>Text Statistics
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Characters:</strong> <span id="charCount">{{ raw_text|length if raw_text else 0 }}</span></li>
+                                <li><strong>Words:</strong> <span id="wordCount">{{ raw_text.split()|length if raw_text else 0 }}</span></li>
+                                <li><strong>Lines:</strong> <span id="lineCount">{{ raw_text.split('\n')|length if raw_text else 0 }}</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-tools text-warning me-2"></i>Actions
+                            </h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-sm btn-success" onclick="downloadText()">
+                                    <i class="fas fa-download me-1"></i>Download as TXT
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="shareText()">
+                                    <i class="fas fa-share me-1"></i>Share Text
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-custom">
+                    <i class="fas fa-upload me-2"></i>Upload Another Image
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(fieldId) {
+    const field = document.getElementById(fieldId);
+    const text = field.textContent || field.innerText;
+    
+    if (text.trim() === '') {
+        return;
+    }
+    
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-outline-secondary');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 1500);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        // Fallback for older browsers
+        field.select();
+        document.execCommand('copy');
+        alert('Field copied to clipboard!');
+    });
+}
+
+function downloadText() {
+    const text = document.getElementById('extractedText').textContent;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'extracted_text.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function shareText() {
+    const text = document.getElementById('extractedText').textContent;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Extracted Text',
+            text: text
+        }).catch(console.error);
+    } else {
+        // Fallback - copy to clipboard
+        copyToClipboard('extractedText');
+        alert('Text copied to clipboard! You can now paste it anywhere.');
+    }
+}
+</script>
+{% endblock %} 
