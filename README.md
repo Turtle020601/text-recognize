@@ -259,4 +259,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) - Open source OCR engine
 - [OpenAI](https://openai.com/) - AI-powered text recognition
 - [Flask](https://flask.palletsprojects.com/) - Web framework
-- [Bootstrap](https://getbootstrap.com/) - UI framework 
+- [Bootstrap](https://getbootstrap.com/) - UI framework  
