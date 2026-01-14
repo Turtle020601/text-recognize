@@ -76,7 +76,7 @@ def extract_text_gemini(image_path):
         image = Image.open(image_path)
         
         # Initialize Gemini model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         # Generate text extraction with comprehensive structured field detection
         response = model.generate_content([
